@@ -22,7 +22,8 @@ from dox.tests import base
 default_argp = argparse.Namespace(user_map=None, command=None,
                                   environment=None, extra_args=None,
                                   debug=None, noop=True,
-                                  images=None, path_map=None)
+                                  images=None, path_map=None,
+                                  project_name=None)
 
 
 class TestCmd(base.TestCase):

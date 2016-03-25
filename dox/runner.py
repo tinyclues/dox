@@ -35,11 +35,12 @@ class Runner(object):
     def __init__(self, args, image_name=None):
         image_name = image_name and "_" + image_name or ""
         self.args = args
-        self.project = os.path.basename(os.path.abspath('.'))
-        self.base_image_name = 'dox/%s%s_base' % (self.project,
-                                                  image_name)
-        self.test_image_name = 'dox/%s%s_test' % (self.project,
-                                                  image_name)
+        if args.project_name is None:
+            project = os.path.basename(os.path.abspath('.'))
+        else:
+            project = args.project_name
+        self.base_image_name = 'dox/%s%s_base' % (project, image_name)
+        self.test_image_name = 'dox/%s%s_test' % (project, image_name)
         self.user_map = self._get_user_mapping()
         self.path_map = self._get_path_mapping()
 

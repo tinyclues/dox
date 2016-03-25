@@ -64,6 +64,8 @@ def parse_args():
                         action='store_true', help='Rebuild all images')
     parser.add_argument('-d', '--debug', dest='debug', default=False,
                         action='store_true', help='Debug mode')
+    parser.add_argument('-p', '--project_name', dest='project_name', default=None,
+                        help='Poject name (defaults to current directory name')
     parser.add_argument('-q', '--quiet', dest='quiet', default=False,
                         action='store_true', help='Quiet output')
     parser.add_argument('-n', '--noop', dest='noop', default=False,

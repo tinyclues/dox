@@ -42,7 +42,8 @@ class TestRunner(base.TestCase):
 
     def test_user_mapping(self):
         dr = doxrunner.Runner(argparse.Namespace(user_map='foo:100:10',
-                                                 path_map=None))
+                                                 path_map=None,
+                                                 project_name=None))
         self.assertEqual('foo', dr.user_map['username'])
         self.assertEqual(100, dr.user_map['uid'])
         self.assertEqual(10, dr.user_map['gid'])
@@ -52,32 +53,36 @@ class TestRunner(base.TestCase):
     @mock.patch('pwd.getpwuid', return_value=['toto'])
     def test_user_mapping_default(self, os_uid, os_gid, os_username):
         dr = doxrunner.Runner(argparse.Namespace(user_map=None,
-                                                 path_map=None))
+                                                 path_map=None,
+                                                 project_name=None))
         self.assertEqual('toto', dr.user_map['username'])
         self.assertEqual(12345, dr.user_map['uid'])
         self.assertEqual(67890, dr.user_map['gid'])
 
     def test_path_mapping(self):
         dr = doxrunner.Runner(argparse.Namespace(path_map='/Users:/home',
-                                                 user_map=None))
+                                                 user_map=None,
+                                                 project_name=None))
         self.assertEqual('/Users', dr.path_map['local'])
         self.assertEqual('/home', dr.path_map['remote'])
 
     def test_path_mapping_extra_colon(self):
         dr = doxrunner.Runner(argparse.Namespace(path_map='/Users:/home:foo',
-                                                 user_map=None))
+                                                 user_map=None,
+                                                 project_name=None))
         self.assertEqual('/Users', dr.path_map['local'])
         self.assertEqual('/home:foo', dr.path_map['remote'])
 
     def test_path_mapping_default(self):
         dr = doxrunner.Runner(argparse.Namespace(path_map=None,
-                                                 user_map=None))
+                                                 user_map=None,
+                                                 project_name=None))
         self.assertEqual(None, dr.path_map)
 
     def test_is_docker_installed(self):
-        dr = doxrunner.Runner(argparse.Namespace(
-            path_map=None,
-            user_map=None))
+        dr = doxrunner.Runner(argparse.Namespace(path_map=None,
+                                                 user_map=None,
+                                                 project_name=None))
 
         def mydocker_cmd(dr, *args):
             raise OSError
@@ -92,6 +97,7 @@ class TestRunner(base.TestCase):
     def test_docker_cmd(self):
         dr = doxrunner.Runner(argparse.Namespace(user_map=None,
                                                  path_map=None,
+                                                 project_name=None,
                                                  debug=False))
         dr._run_shell_command = mock.MagicMock()
         dr._docker_cmd("version")
@@ -101,6 +107,7 @@ class TestRunner(base.TestCase):
 
         dr = doxrunner.Runner(argparse.Namespace(user_map=None,
                                                  path_map=None,
+                                                 project_name=None,
                                                  debug=True))
         dr._run_shell_command = mock.MagicMock()
         dr._docker_cmd("version")
@@ -110,6 +117,7 @@ class TestRunner(base.TestCase):
 
         dr = doxrunner.Runner(argparse.Namespace(user_map=None,
                                                  path_map=None,
+                                                 project_name=None,
                                                  debug=True))
         dr._run_shell_command = mock.Mock()
         dr._run_shell_command.side_effect = OSError("Boom")
@@ -117,7 +125,8 @@ class TestRunner(base.TestCase):
 
     def test_build_images_pass(self):
         dr = doxrunner.Runner(argparse.Namespace(path_map=None,
-                                                 user_map=None))
+                                                 user_map=None,
+                                                 project_name=None))
         dr.have_test_image = mock.Mock()
         dr.return_value = True
         self.assertIsNone(dr.build_test_image("image", FakeCommands()))
@@ -133,7 +142,7 @@ class TestRunner(base.TestCase):
         dr = doxrunner.Runner(argparse.Namespace(
             quiet=False, noop=False,
             rebuild=True, debug=True,
-            path_map=None,
+            path_map=None, project_name=None,
             user_map=None))
         m_docker_build = dr._docker_build = mock.Mock()
         with mock.patch.object(tempfile, "mkdtemp", return_value=my_temp_file):
@@ -167,6 +176,7 @@ RUN toto2
             rebuild=True,
             rebuild_all=False,
             path_map=None,
+            project_name=None,
             user_map=None))
         dr._get_image_list = mock.MagicMock()
         self.assertFalse(dr.have_base_image())
@@ -175,6 +185,7 @@ RUN toto2
             rebuild=False,
             rebuild_all=True,
             path_map=None,
+            project_name=None,
             user_map=None))
         dr._get_image_list = mock.MagicMock()
         self.assertFalse(dr.have_base_image())
@@ -183,6 +194,7 @@ RUN toto2
             rebuild=False,
             rebuild_all=False,
             path_map=None,
+            project_name=None,
             user_map=None))
         dr._get_image_list = mock.MagicMock()
         dr._get_image_list.return_value = [dr.base_image_name]
@@ -192,6 +204,7 @@ RUN toto2
             rebuild=False,
             rebuild_all=False,
             path_map=None,
+            project_name=None,
             user_map=None))
         dr._get_image_list = mock.MagicMock()
         dr._get_image_list.return_value = []
@@ -204,6 +217,7 @@ RUN toto2
             rebuild=True,
             rebuild_all=False,
             path_map=None,
+            project_name=None,
             user_map=None))
         self.assertFalse(dr.have_test_image())
 
@@ -211,6 +225,7 @@ RUN toto2
             rebuild=False,
             rebuild_all=True,
             path_map=None,
+            project_name=None,
             user_map=None))
         self.assertFalse(dr.have_test_image())
 
@@ -218,6 +233,7 @@ RUN toto2
             rebuild=False,
             rebuild_all=False,
             path_map=None,
+            project_name=None,
             user_map=None))
         dr._get_image_list = mock.MagicMock()
         dr._get_image_list.return_value = [dr.test_image_name]
@@ -227,7 +243,20 @@ RUN toto2
             rebuild=False,
             rebuild_all=False,
             path_map=None,
+            project_name=None,
             user_map=None))
         dr._get_image_list = mock.MagicMock()
         dr._get_image_list.return_value = []
         self.assertFalse(dr.have_test_image())
+
+    def test_has_no_project_name(self):
+        dr = doxrunner.Runner(argparse.Namespace(user_map=None,
+                                                 path_map=None,
+                                                 project_name=None))
+        self.assertEqual(dr.base_image_name, 'dox/dox_base')
+
+    def test_has_project_name(self):
+        dr = doxrunner.Runner(argparse.Namespace(user_map=None,
+                                                 path_map=None,
+                                                 project_name='foo'))
+        self.assertEqual(dr.base_image_name, 'dox/foo_base')
